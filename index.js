@@ -2,14 +2,26 @@ const express=require('express')
 const app=express()
 const mongoose=require('mongoose')
 const User=require("./model/User")
+const Admin=require("./admin/Admin")
+const Instruc=require("./instructions/Instruc")
 const path=require("path")
+app.use(function(req, res, next) {
+
+
+    res.header("Access-Control-Allow-Origin","*"); // update to match the domain you will make the request from
+        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+        next();
+    
+  
+    
+    });
 const PORT=process.env.PORT || 5000
 
 app.use(express.json({extended:true}))
 
 const start=async() =>{
     try{
-mongoose.connect('mongodb+srv://kwork:RY1ATripui6$@cluster0.apzfal7.mongodb.net/?retryWrites=true&w=majority',{})
+mongoose.connect('mongodb+srv://admin:RY1ATripui6$@cluster0.8znhtvr.mongodb.net/?retryWrites=true&w=majority',{})
 app.listen(PORT,()=>{
     console.log("Server has been launched on PORT " + PORT)
 })
@@ -19,6 +31,12 @@ app.listen(PORT,()=>{
     }
 }
 start()
+
+
+app.post('/getInstruc',async(req,res)=>{
+const instruc=await Instruc.find({})
+res.json(instruc[0])
+})
 app.post('/createAccount',async(req,res)=>{
     const {login,pass}=req.body
     const candidate = await User.findOne({ login })
@@ -57,6 +75,37 @@ app.post('/signAccount',async(req,res)=>{
     res.json(user)
 
 })
+
+
+
+
+
+app.post('/adminSign', async(req,res)=>{
+    const {login,password}=req.body
+    console.log(req.body)
+    const user = await Admin.findOne({ login })
+  
+    if (!user) {
+        console.log("Ошибка с логином")
+      return res.status(201).json({ message: 'Пользователь не найден' })
+    }
+    console.log(user)
+
+    const isMatch = password==user.password
+
+    if (!isMatch) {
+        console.log("Ошибка с паролем")
+      return res.status(201).json({ message: 'Неверный пароль, попробуйте снова' })
+    }
+
+    
+
+    res.json("isActive")
+
+
+})
+
+
 app.post('/createProject', async (req,res)=>{
     console.log(req.body)
    const {user, titleProject,tags,whereCollect,whatCollect,amountOfPages,prox,loading,isReady,download}=req.body
